@@ -161,5 +161,5 @@ int main() {
         //iterating through possible combinations
         iterate(pass);
     }
-    return 0;
+    return 1; //1 means failed
 }
