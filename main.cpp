@@ -5,25 +5,70 @@
 #include "md5.cpp"
 
 using namespace std;
+string iterate(string& pass){
+    if (pass[5] == 'z') {
+        if (pass[4] == 'z') {
+            if (pass[3] == 'z') {
+                if (pass[2] == 'z') {
+                    if (pass[1] == 'z') {
+                        pass[0]++;
+                        pass[1] = 'a';
+                        pass[2] = 'a';
+                        pass[3] = 'a';
+                        pass[4] = 'a';
+                        pass[5] = 'a';
+                    }
+                    else {
+                        pass[1]++;
+                        pass[2] = 'a';
+                        pass[3] = 'a';
+                        pass[4] = 'a';
+                        pass[5] = 'a';
+                    }
+                }
+                else {
+                    pass[2]++;
+                    pass[3] = 'a';
+                    pass[4] = 'a';
+                    pass[5] = 'a';
+                }
+            }
+            else {
+                pass[3]++;
+                pass[4] = 'a';
+                pass[5] = 'a';
+            }
+        }
+        else {
+            pass[4]++;
+            pass[5] = 'a';
+        }
+    }
+    else {
+        pass[5]++;
+    }
+
+    return pass;
+}
 int main() {
     string pass = "aaaaaa";
     string magic = "$1$";
     string salt = "4fTgjp6q";
-    string hash = "ihqYanxbDwUOlJEV9cUTB/";
-    bool found = false;
-    while ((pass != "zzzzzz") && !found) {
+    string hash = "ihqYanxbDwUOlJEV9cUTB/"; //need to match with this
+    while (pass != "zzzzzz") {
         unsigned char *altsum = MD5(pass + salt + pass).digest;
         string x = "";
         for (int i = 0; i < 6; ++i) {
             x.push_back(altsum[i]);
         }
         unsigned char *intsum = MD5(pass + magic + salt + x + pass[0] + '\0' + '\0').digest;
+        //intermediate 1000 calculation
         for (int i = 0; i < 1000; ++i) {
             string inter_sum = "";
             for (int j = 0; j < 16; ++j) {
                 inter_sum.push_back(intsum[j]);
             }
-            string temp = "";
+            string temp = ""; //stores intermediate i
             if (i % 2 == 0) {
                 temp += inter_sum;
             }
@@ -42,11 +87,11 @@ int main() {
             if (i % 2 == 1) {
                 temp += inter_sum;
             }
-            intsum = MD5(temp).digest;
+            intsum = MD5(temp).digest; //saves intermediate i for the intermediate i+1 calculation
         }
 
         unsigned char order[16];
-
+        //mapping 16 bytes in the order the site said
         order[0] = intsum[11];
         order[1] = intsum[4];
         order[2] = intsum[10];
@@ -64,7 +109,7 @@ int main() {
         order[14] = intsum[6];
         order[15] = intsum[12];
 
-        string crypt64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        string crypt64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; //as stated in slides
 
         unsigned long long first_char = (0 | order[13] << 16) | (order[14] << 8) | order[15];
         unsigned long long second_char = (0 | order[10] << 16) | (order[11] << 8) | order[12];
@@ -73,7 +118,7 @@ int main() {
         unsigned long long fifth_char = (0 | order[1] << 16) | (order[2] << 8) | order[3];
         unsigned long long sixth_char = 0 | order[0];
 
-        string answer = "";
+        string answer = ""; //hash of combination will be saved here
         int y = 0;
 
         while (first_char != 0) {
@@ -108,52 +153,13 @@ int main() {
         }
         cout << pass << endl << answer << endl;
 
-        if(answer == hash)  {
+        if(answer == hash)  { //exit condition when password is found
             cout << "Password is: " << pass << endl;
-            found = true;
+            cout << "Hash of password is: " << answer << endl;
+            return 0;
         }
-
-        if (pass[5] == 'z') {
-            if (pass[4] == 'z') {
-                if (pass[3] == 'z') {
-                    if (pass[2] == 'z') {
-                        if (pass[1] == 'z') {
-                            pass[0]++;
-                            pass[1] = 'a';
-                            pass[2] = 'a';
-                            pass[3] = 'a';
-                            pass[4] = 'a';
-                            pass[5] = 'a';
-                        }
-                        else {
-                            pass[1]++;
-                            pass[2] = 'a';
-                            pass[3] = 'a';
-                            pass[4] = 'a';
-                            pass[5] = 'a';
-                        }
-                    }
-                    else {
-                        pass[2]++;
-                        pass[3] = 'a';
-                        pass[4] = 'a';
-                        pass[5] = 'a';
-                    }
-                }
-                else {
-                    pass[3]++;
-                    pass[4] = 'a';
-                    pass[5] = 'a';
-                }
-            }
-            else {
-                pass[4]++;
-                pass[5] = 'a';
-            }
-        }
-        else {
-            pass[5]++;
-        }
+        //iterating through possible combinations
+        iterate(pass);
     }
     return 0;
 }
